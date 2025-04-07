@@ -1,0 +1,112 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define TOTAL_CARRINHOS 10
+#define MAX_COR 20
+
+typedef struct Carrinho {
+    int pessoas;
+    char cor[MAX_COR];
+    struct Carrinho *proximo;
+    struct Carrinho *anterior;
+} Carrinho;
+
+Carrinho* inicializarRodaGigante(const char* cores[]) {
+    Carrinho *inicio = NULL, *atual = NULL, *novo;
+
+    for (int i = 0; i < TOTAL_CARRINHOS; i++) {
+        novo = (Carrinho*)malloc(sizeof(Carrinho));
+        novo->pessoas = 0;
+        strncpy(novo->cor, cores[i], MAX_COR);
+        novo->proximo = NULL;
+        novo->anterior = atual;
+
+        if (atual)
+            atual->proximo = novo;
+        else
+            inicio = novo;
+
+        atual = novo;
+    }
+
+    // Fecha a lista circularmente
+    inicio->anterior = atual;
+    atual->proximo = inicio;
+
+    return inicio;
+}
+
+void girarHorario(Carrinho** atual) {
+    *atual = (*atual)->proximo;
+}
+
+void girarAntiHorario(Carrinho** atual) {
+    *atual = (*atual)->anterior;
+}
+
+void embarcar(Carrinho* atual) {
+    if (atual->pessoas < 4) {
+        atual->pessoas++;
+        printf("Embarcou 1 pessoa no carrinho %s. Agora tem %d pessoas.\n", atual->cor, atual->pessoas);
+    } else {
+        printf("Carrinho %s está cheio!\n", atual->cor);
+    }
+}
+
+void desembarcar(Carrinho* atual) {
+    if (atual->pessoas > 0) {
+        atual->pessoas--;
+        printf("Desembarcou 1 pessoa do carrinho %s. Agora tem %d pessoas.\n", atual->cor, atual->pessoas);
+    } else {
+        printf("Carrinho %s está vazio!\n", atual->cor);
+    }
+}
+
+void mostrarCarrinhoAtual(Carrinho* atual) {
+    printf("Carrinho atual: Cor: %s | Pessoas: %d\n", atual->cor, atual->pessoas);
+}
+
+int main() {
+    const char* cores[TOTAL_CARRINHOS] = {
+        "Vermelho", "Azul", "Verde", "Amarelo", "Roxo",
+        "Laranja", "Rosa", "Branco", "Cinza", "Preto"
+    };
+
+    Carrinho* atual = inicializarRodaGigante(cores);
+
+    int opcao;
+    do {
+        printf("\n--- Roda Gigante ---\n");
+        mostrarCarrinhoAtual(atual);
+        printf("1. Girar para Direita (Horário)\n");
+        printf("2. Girar para Esquerda (Anti-horário)\n");
+        printf("3. Embarcar Pessoa\n");
+        printf("4. Desembarcar Pessoa\n");
+        printf("0. Sair\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &opcao);
+
+        switch(opcao) {
+            case 1:
+                girarHorario(&atual);
+                break;
+            case 2:
+                girarAntiHorario(&atual);
+                break;
+            case 3:
+                embarcar(atual);
+                break;
+            case 4:
+                desembarcar(atual);
+                break;
+            case 0:
+                printf("Encerrando programa.\n");
+                break;
+            default:
+                printf("Opção inválida.\n");
+        }
+    } while(opcao != 0);
+
+    return 0;
+}
