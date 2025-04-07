@@ -1,97 +1,127 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <iostream>
+#include <string>
 
+using namespace std;
 
-typedef struct Musica {
-    char nome[100];
-    char artista[100];
-    struct Musica *proxima;
-    struct Musica *anterior;
-} Musica;
+struct Musica {
+    string nome;
+    string artista;
+    Musica* prox;
+    Musica* ant;
 
+    Musica(const string& n, const string& a) : nome(n), artista(a), prox(nullptr), ant(nullptr) {}
+};
 
-Musica *inicio = NULL;
-Musica *fim = NULL;
-Musica *tocando = NULL;
+class Playlist {
+private:
+    Musica* inicio;
+    Musica* fim;
+    Musica* tocando;
 
+public:
+    Playlist() : inicio(nullptr), fim(nullptr), tocando(nullptr) {}
 
-Musica* criarMusica(const char *nome, const char *artista) {
-    Musica *nova = (Musica*)malloc(sizeof(Musica));
-    strcpy(nova->nome, nome);
-    strcpy(nova->artista, artista);
-    nova->proxima = NULL;
-    nova->anterior = NULL;
-    return nova;
-}
-
-
-void inserirNoInicio(const char *nome, const char *artista) {
-    Musica *nova = criarMusica(nome, artista);
-    if (inicio == NULL) {
-        inicio = fim = tocando = nova;
-    } else {
-        nova->proxima = inicio;
-        inicio->anterior = nova;
-        inicio = nova;
+    ~Playlist() {
+        Musica* atual = inicio;
+        while (atual) {
+            Musica* prox = atual->prox;
+            delete atual;
+            atual = prox;
+        }
     }
-    printf("Música '%s' de '%s' adicionada no início.\n", nome, artista);
-}
 
-
-void inserirNoFinal(const char *nome, const char *artista) {
-    Musica *nova = criarMusica(nome, artista);
-    if (fim == NULL) {
-        inicio = fim = tocando = nova;
-    } else {
-        fim->proxima = nova;
-        nova->anterior = fim;
-        fim = nova;
+    void adicionarNoInicio(const string& nome, const string& artista) {
+        Musica* nova = new Musica(nome, artista);
+        if (!inicio) {
+            inicio = fim = tocando = nova;
+        } else {
+            nova->prox = inicio;
+            inicio->ant = nova;
+            inicio = nova;
+        }
     }
-    printf("Música '%s' de '%s' adicionada no final.\n", nome, artista);
-}
 
-void avancarMusica() {
-    if (tocando && tocando->proxima) {
-        tocando = tocando->proxima;
-        printf("Avançou para: '%s' - %s\n", tocando->nome, tocando->artista);
-    } else {
-        printf("Você já está na última música.\n");
+    void adicionarNoFim(const string& nome, const string& artista) {
+        Musica* nova = new Musica(nome, artista);
+        if (!fim) {
+            inicio = fim = tocando = nova;
+        } else {
+            fim->prox = nova;
+            nova->ant = fim;
+            fim = nova;
+        }
     }
-}
 
-void voltarMusica() {
-    if (tocando && tocando->anterior) {
-        tocando = tocando->anterior;
-        printf("Voltou para: '%s' - %s\n", tocando->nome, tocando->artista);
-    } else {
-        printf("Você já está na primeira música.\n");
+    void avancar() {
+        if (tocando && tocando->prox) {
+            tocando = tocando->prox;
+            cout << "Tocando agora: " << tocando->nome << " - " << tocando->artista << endl;
+        } else {
+            cout << "Fim da playlist!" << endl;
+        }
     }
-}
 
-
-void mostrarMusicaAtual() {
-    if (tocando) {
-        printf("Tocando agora: '%s' - %s\n", tocando->nome, tocando->artista);
-    } else {
-        printf("Nenhuma música está sendo tocada.\n");
+    void voltar() {
+        if (tocando && tocando->ant) {
+            tocando = tocando->ant;
+            cout << "Tocando agora: " << tocando->nome << " - " << tocando->artista << endl;
+        } else {
+            cout << "Início da playlist!" << endl;
+        }
     }
-}
 
+    void mostrarPlaylist() {
+        Musica* atual = inicio;
+        while (atual) {
+            cout << atual->nome << " - " << atual->artista;
+            if (atual == tocando) cout << " [Tocando]";
+            cout << endl;
+            atual = atual->prox;
+        }
+    }
+
+    void inserirMusica() {
+        string nome, artista, posicao;
+        cout << "Digite o nome da música: ";
+        getline(cin, nome);
+        cout << "Digite o nome do artista: ";
+        getline(cin, artista);
+        cout << "Deseja adicionar no início ou no fim? (inicio/fim): ";
+        getline(cin, posicao);
+
+        if (posicao == "inicio") {
+            adicionarNoInicio(nome, artista);
+        } else {
+            adicionarNoFim(nome, artista);
+        }
+    }
+};
 
 int main() {
-    printf("-----------------------------------------------------------------\n");
-    inserirNoFinal("contagem", "veigh");
-    inserirNoFinal("Imagine", "matue");
-    inserirNoInicio("Smells Like Teen Spirit", "Nirvana");
-    printf("-----------------------------------------------------------------\n");
-    mostrarMusicaAtual();  
-    avancarMusica();       
-    avancarMusica();       
-    avancarMusica();       
-    voltarMusica();        
-    voltarMusica();        
-    voltarMusica();        
-    printf("-----------------------------------------------------------------\n");
+    Playlist minhaPlaylist;
+  printf("--------------------------------------------------------\n");
+
+    minhaPlaylist.adicionarNoFim("vida chique", "veigh");
+    minhaPlaylist.adicionarNoFim("Imagine", "teto");
+    minhaPlaylist.adicionarNoInicio("Hotel California", "Eagles");
+    minhaPlaylist.adicionarNoFim("i know", "travis scott");
+
+
+    minhaPlaylist.mostrarPlaylist();
+
+    cout << "\nInserindo nova música..." << endl;
+    minhaPlaylist.inserirMusica();
+
+
+    cout << "\nPlaylist atualizada:" << endl;
+    minhaPlaylist.mostrarPlaylist();
+
+    cout << "\nAvançando...\n";
+    minhaPlaylist.avancar();
+    minhaPlaylist.avancar();
+
+    cout << "\nVoltando...\n";
+    minhaPlaylist.voltar();
+ 
     return 0;
 }
