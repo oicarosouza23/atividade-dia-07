@@ -1,0 +1,97 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+typedef struct Musica {
+    char nome[100];
+    char artista[100];
+    struct Musica *proxima;
+    struct Musica *anterior;
+} Musica;
+
+
+Musica *inicio = NULL;
+Musica *fim = NULL;
+Musica *tocando = NULL;
+
+
+Musica* criarMusica(const char *nome, const char *artista) {
+    Musica *nova = (Musica*)malloc(sizeof(Musica));
+    strcpy(nova->nome, nome);
+    strcpy(nova->artista, artista);
+    nova->proxima = NULL;
+    nova->anterior = NULL;
+    return nova;
+}
+
+
+void inserirNoInicio(const char *nome, const char *artista) {
+    Musica *nova = criarMusica(nome, artista);
+    if (inicio == NULL) {
+        inicio = fim = tocando = nova;
+    } else {
+        nova->proxima = inicio;
+        inicio->anterior = nova;
+        inicio = nova;
+    }
+    printf("Música '%s' de '%s' adicionada no início.\n", nome, artista);
+}
+
+
+void inserirNoFinal(const char *nome, const char *artista) {
+    Musica *nova = criarMusica(nome, artista);
+    if (fim == NULL) {
+        inicio = fim = tocando = nova;
+    } else {
+        fim->proxima = nova;
+        nova->anterior = fim;
+        fim = nova;
+    }
+    printf("Música '%s' de '%s' adicionada no final.\n", nome, artista);
+}
+
+void avancarMusica() {
+    if (tocando && tocando->proxima) {
+        tocando = tocando->proxima;
+        printf("Avançou para: '%s' - %s\n", tocando->nome, tocando->artista);
+    } else {
+        printf("Você já está na última música.\n");
+    }
+}
+
+void voltarMusica() {
+    if (tocando && tocando->anterior) {
+        tocando = tocando->anterior;
+        printf("Voltou para: '%s' - %s\n", tocando->nome, tocando->artista);
+    } else {
+        printf("Você já está na primeira música.\n");
+    }
+}
+
+
+void mostrarMusicaAtual() {
+    if (tocando) {
+        printf("Tocando agora: '%s' - %s\n", tocando->nome, tocando->artista);
+    } else {
+        printf("Nenhuma música está sendo tocada.\n");
+    }
+}
+
+
+int main() {
+    printf("-----------------------------------------------------------------\n");
+    inserirNoFinal("contagem", "veigh");
+    inserirNoFinal("Imagine", "matue");
+    inserirNoInicio("Smells Like Teen Spirit", "Nirvana");
+    printf("-----------------------------------------------------------------\n");
+    mostrarMusicaAtual();  
+    avancarMusica();       
+    avancarMusica();       
+    avancarMusica();       
+    voltarMusica();        
+    voltarMusica();        
+    voltarMusica();        
+    printf("-----------------------------------------------------------------\n");
+    return 0;
+}
